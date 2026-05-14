@@ -121,8 +121,3 @@ if symbol:
         ax.set_ylabel("Closing Price (₹)")
         ax.legend()
         st.pyplot(fig)
-
-
-
-
-# ngrok config add-authtoken 2yxLwmfNnsucNDmJeRRooB4Thmm_8567HoEuo2q1T8uwqhfC1
