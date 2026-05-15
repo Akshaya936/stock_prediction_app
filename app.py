@@ -7,6 +7,10 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from datetime import datetime
+import tensorflow as tf
+
+np.random.seed(42)
+tf.random.set_seed(42)
 
 # -------------------------
 # 1. Page Setup
@@ -61,8 +65,14 @@ if symbol:
         st.error("❌ No data found. Please try a different stock or check again later.")
     else:
         df = df.reset_index()
+        # Fix multi-index columns from yfinance
+        df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
         st.subheader(f"{nifty_50[symbol]} - Last 5 Trading Days")
-        st.dataframe(df[['Date', 'Close', 'High']].tail())
+        st.dataframe(
+        df[['Date', 'Close', 'High']].tail(),
+        use_container_width=True,
+        height=200
+        )
         st.write(f"🗓️ Latest Data Date: **{df['Date'].iloc[-1].date()}**")
 
         # -------------------------
@@ -88,12 +98,17 @@ if symbol:
         # -------------------------
         # 5. Build LSTM Model
         # -------------------------
-        model = Sequential()
-        model.add(LSTM(50, return_sequences=True, input_shape=(X.shape[1], 1)))
-        model.add(LSTM(50))
-        model.add(Dense(1))
-        model.compile(optimizer='adam', loss='mean_squared_error')
-        model.fit(X_train, y_train, epochs=10, batch_size=32, verbose=0)
+       @st.cache_resource
+def train_model(X_train, y_train):
+    model = Sequential()
+    model.add(LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+    model.add(LSTM(50))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.fit(X_train, y_train, epochs=5, batch_size=32, verbose=0)
+    return model
+
+model = train_model(X_train, y_train)
 
         # -------------------------
         # 6. Predict Next Day Price
