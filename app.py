@@ -75,9 +75,9 @@ if symbol:
         )
         st.write(f"🗓️ Latest Data Date: **{df['Date'].iloc[-1].date()}**")
 
-        # -------------------------
-        # 4. Preprocessing
-        # -------------------------
+# -------------------------
+# 4. Preprocessing
+# -------------------------
         data = df[['Close']].values
         scaler = MinMaxScaler()
         scaled_data = scaler.fit_transform(data)
@@ -95,10 +95,10 @@ if symbol:
         X_train, X_test = X[:train_size], X[train_size:]
         y_train, y_test = y[:train_size], y[train_size:]
 
-        # -------------------------
-        # 5. Build LSTM Model
-        # -------------------------
-       @st.cache_resource
+# -------------------------
+# 5. Build LSTM Model
+# -------------------------
+@st.cache_resource
 def train_model(X_train, y_train):
     model = Sequential()
     model.add(LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
@@ -110,29 +110,29 @@ def train_model(X_train, y_train):
 
 model = train_model(X_train, y_train)
 
-        # -------------------------
-        # 6. Predict Next Day Price
-        # -------------------------
-        last_60 = scaled_data[-60:]
-        X_input = last_60.reshape(1, 60, 1)
-        pred_scaled = model.predict(X_input)
-        pred_price = scaler.inverse_transform(pred_scaled)[0][0]
+# -------------------------
+# 6. Predict Next Day Price
+# -------------------------
+last_60 = scaled_data[-60:]
+X_input = last_60.reshape(1, 60, 1)
+pred_scaled = model.predict(X_input)
+pred_price = scaler.inverse_transform(pred_scaled)[0][0]
 
-        st.success(f"🔮 Predicted Next Day Closing Price: ₹{pred_price:.2f}")
+st.success(f"🔮 Predicted Next Day Closing Price: ₹{pred_price:.2f}")
 
-        # -------------------------
-        # 7. Plot Forecast
-        # -------------------------
-        train_plot = scaler.inverse_transform(y_train)
-        actual_plot = scaler.inverse_transform(y_test)
-        predicted_plot = scaler.inverse_transform(model.predict(X_test))
+# -------------------------
+# 7. Plot Forecast
+# -------------------------
+train_plot = scaler.inverse_transform(y_train)
+actual_plot = scaler.inverse_transform(y_test)
+predicted_plot = scaler.inverse_transform(model.predict(X_test))
 
-        fig, ax = plt.subplots()
-        ax.plot(range(len(train_plot)), train_plot, label='Train')
-        ax.plot(range(len(train_plot), len(train_plot) + len(actual_plot)), actual_plot, label='Actual', color='orange')
-        ax.plot(range(len(train_plot), len(train_plot) + len(predicted_plot)), predicted_plot, label='Predicted', color='green')
-        ax.set_title(f"{nifty_50[symbol]} - Price Forecast")
-        ax.set_xlabel("Time")
-        ax.set_ylabel("Closing Price (₹)")
-        ax.legend()
-        st.pyplot(fig)
+fig, ax = plt.subplots()
+ax.plot(range(len(train_plot)), train_plot, label='Train')
+ax.plot(range(len(train_plot), len(train_plot) + len(actual_plot)), actual_plot, label='Actual', color='orange')
+ax.plot(range(len(train_plot), len(train_plot) + len(predicted_plot)), predicted_plot, label='Predicted', color='green')
+ax.set_title(f"{nifty_50[symbol]} - Price Forecast")
+ax.set_xlabel("Time")
+ax.set_ylabel("Closing Price (₹)")
+ax.legend()
+st.pyplot(fig)
